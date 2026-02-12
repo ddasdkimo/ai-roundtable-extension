@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 圓桌會議</title>
+  <link rel="stylesheet" href="../styles/panel.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-title">
+        <span class="logo">🔵🟢🟠</span>
+        <h1>AI 圓桌會議</h1>
+      </div>
+      <div class="header-actions">
+        <button id="btn-history" class="btn btn-icon" title="歷史記錄">📋</button>
+        <button id="btn-export" class="btn btn-icon" title="匯出記錄" disabled>📥</button>
+        <button id="btn-settings" class="btn btn-icon" title="設定">⚙️</button>
+      </div>
+    </header>
+
+    <!-- Setup View -->
+    <section id="view-setup" class="view active">
+      <div class="setup-card">
+        <h2>開始新會議</h2>
+
+        <div class="form-group">
+          <label for="input-topic">討論議題</label>
+          <textarea id="input-topic" rows="3" placeholder="例如：AI 是否會取代大部分的知識工作？"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>參與的 AI</label>
+          <div class="participant-selector">
+            <label class="chip-checkbox">
+              <input type="checkbox" value="claude" checked>
+              <span class="chip" style="--chip-color: #D97757">🟠 Claude</span>
+            </label>
+            <label class="chip-checkbox">
+              <input type="checkbox" value="chatgpt" checked>
+              <span class="chip" style="--chip-color: #10A37F">🟢 ChatGPT</span>
+            </label>
+            <label class="chip-checkbox">
+              <input type="checkbox" value="gemini" checked>
+              <span class="chip" style="--chip-color: #4285F4">🔵 Gemini</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="input-rounds">討論輪數</label>
+            <select id="input-rounds">
+              <option value="1">1 輪</option>
+              <option value="2" selected>2 輪</option>
+              <option value="3">3 輪</option>
+              <option value="4">4 輪</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="input-eval">評價模式</label>
+            <select id="input-eval">
+              <option value="cross">交叉評價</option>
+              <option value="summary">僅摘要</option>
+              <option value="none">無評價</option>
+            </select>
+          </div>
+        </div>
+
+        <button id="btn-start" class="btn btn-primary btn-full">開始圓桌會議</button>
+
+        <p class="setup-hint" id="api-warning" style="display:none">
+          ⚠️ 請先在設定中配置 API Key
+        </p>
+      </div>
+    </section>
+
+    <!-- Meeting View -->
+    <section id="view-meeting" class="view">
+      <!-- Roundtable Visual -->
+      <div class="roundtable">
+        <div class="roundtable-center">
+          <span id="phase-label">討論中</span>
+          <span id="round-label">第 1 輪</span>
+        </div>
+        <div id="roundtable-seats" class="roundtable-seats">
+          <!-- AI participant seats injected dynamically -->
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="meeting-controls">
+        <button id="btn-pause" class="btn btn-secondary">⏸ 暫停</button>
+        <button id="btn-stop" class="btn btn-danger">⏹ 結束</button>
+      </div>
+
+      <!-- Transcript -->
+      <div id="transcript" class="transcript">
+        <!-- Messages rendered here -->
+      </div>
+
+      <!-- Evaluation Section -->
+      <div id="evaluation-section" class="evaluation-section" style="display:none">
+        <h3>📊 交叉評價</h3>
+        <div id="evaluations" class="evaluations"></div>
+      </div>
+
+      <!-- Summary Section -->
+      <div id="summary-section" class="summary-section" style="display:none">
+        <h3>📋 會議摘要</h3>
+        <div id="summary-content" class="summary-content"></div>
+      </div>
+    </section>
+  </div>
+
+  <script src="panel.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 圓桌會議 - 設定</title>
+  <style>
+    :root {
+      --bg: #0f0f14;
+      --bg-card: #1a1a24;
+      --bg-input: #22222e;
+      --text: #e8e8ed;
+      --text-dim: #9898a8;
+      --accent: #6366f1;
+      --accent-hover: #818cf8;
+      --border: #2e2e3e;
+      --success: #4ade80;
+      --danger: #ef4444;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 4px;
+    }
+    .subtitle {
+      color: var(--text-dim);
+      margin-bottom: 32px;
+    }
+    .section {
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .section h2 {
+      font-size: 16px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .field {
+      margin-bottom: 16px;
+    }
+    .field:last-child {
+      margin-bottom: 0;
+    }
+    .field label {
+      display: block;
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .input-row {
+      display: flex;
+      gap: 8px;
+    }
+    input[type="password"],
+    input[type="text"],
+    select {
+      flex: 1;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      font-weight: 500;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .btn-verify {
+      background: var(--bg-input);
+      color: var(--text);
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .btn-verify:hover { background: var(--border); }
+    .btn-verify.valid { border-color: var(--success); color: var(--success); }
+    .btn-verify.invalid { border-color: var(--danger); color: var(--danger); }
+    .btn-save {
+      background: var(--accent);
+      color: white;
+      padding: 12px 32px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .btn-save:hover { background: var(--accent-hover); }
+    .provider-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+    .save-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      align-items: center;
+    }
+    .save-status {
+      color: var(--success);
+      font-size: 13px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .save-status.visible { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⚙️ AI 圓桌會議設定</h1>
+    <p class="subtitle">配置你的 AI 參與者與偏好設定</p>
+
+    <!-- Claude -->
+    <div class="section">
+      <h2><span class="provider-icon">🟠</span> Claude (Anthropic)</h2>
+      <div class="field">
+        <label>API Key</label>
+        <div class="input-row">
+          <input type="password" id="key-claude" placeholder="sk-ant-...">
+          <button class="btn btn-verify" data-provider="claude">驗證</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>模型</label>
+        <select id="model-claude">
+          <option value="claude-opus-4-6">Claude Opus 4.6</option>
+          <option value="claude-sonnet-4-5-20250929" selected>Claude Sonnet 4.5</option>
+          <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ChatGPT -->
+    <div class="section">
+      <h2><span class="provider-icon">🟢</span> ChatGPT (OpenAI)</h2>
+      <div class="field">
+        <label>API Key</label>
+        <div class="input-row">
+          <input type="password" id="key-chatgpt" placeholder="sk-...">
+          <button class="btn btn-verify" data-provider="chatgpt">驗證</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>模型</label>
+        <select id="model-chatgpt">
+          <option value="gpt-4o" selected>GPT-4o</option>
+          <option value="gpt-4o-mini">GPT-4o Mini</option>
+          <option value="gpt-4-turbo">GPT-4 Turbo</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Gemini -->
+    <div class="section">
+      <h2><span class="provider-icon">🔵</span> Gemini (Google)</h2>
+      <div class="field">
+        <label>API Key</label>
+        <div class="input-row">
+          <input type="password" id="key-gemini" placeholder="AIza...">
+          <button class="btn btn-verify" data-provider="gemini">驗證</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>模型</label>
+        <select id="model-gemini">
+          <option value="gemini-2.0-flash" selected>Gemini 2.0 Flash</option>
+          <option value="gemini-2.0-pro">Gemini 2.0 Pro</option>
+          <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- General Settings -->
+    <div class="section">
+      <h2>🔧 一般設定</h2>
+      <div class="field">
+        <label>預設語言</label>
+        <select id="setting-language">
+          <option value="zh-TW" selected>繁體中文</option>
+          <option value="en">English</option>
+          <option value="ja">日本語</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>預設討論輪數</label>
+        <select id="setting-rounds">
+          <option value="1">1 輪</option>
+          <option value="2" selected>2 輪</option>
+          <option value="3">3 輪</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="save-row">
+      <span class="save-status" id="save-status">✓ 已儲存</span>
+      <button class="btn btn-save" id="btn-save">儲存設定</button>
+    </div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

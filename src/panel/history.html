@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>會議歷史 - AI 圓桌會議</title>
+  <link rel="stylesheet" href="../styles/panel.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-title">
+        <button id="btn-back" class="btn btn-icon" title="返回">←</button>
+        <h1>會議歷史</h1>
+      </div>
+    </header>
+
+    <!-- History List View -->
+    <section id="view-list" class="view active">
+      <div id="history-list" class="history-list">
+        <!-- Items rendered dynamically -->
+      </div>
+      <div id="empty-state" class="empty-state" style="display:none">
+        <p>尚無會議記錄</p>
+        <p class="empty-hint">開始一場圓桌會議後，記錄將自動儲存於此。</p>
+      </div>
+    </section>
+
+    <!-- History Detail View -->
+    <section id="view-detail" class="view">
+      <div class="history-detail">
+        <div class="detail-header">
+          <h2 id="detail-topic"></h2>
+          <div class="detail-meta">
+            <span id="detail-date"></span>
+            <span id="detail-participants"></span>
+          </div>
+          <div class="detail-actions">
+            <button id="btn-export-md" class="btn btn-secondary">📥 匯出 Markdown</button>
+            <button id="btn-delete" class="btn btn-danger">🗑 刪除記錄</button>
+          </div>
+        </div>
+        <div id="detail-content" class="detail-content">
+          <!-- Transcript rendered here -->
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="history.js" type="module"></script>
+</body>
+</html>

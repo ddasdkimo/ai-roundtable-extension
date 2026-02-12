@@ -1,0 +1,11 @@
+{
+  "name": "ai-roundtable-extension",
+  "version": "1.0.0",
+  "description": "AI Roundtable Discussion Chrome Extension",
+  "type": "module",
+  "scripts": {
+    "build": "node build.js",
+    "dev": "node build.js --watch"
+  },
+  "devDependencies": {}
+}
