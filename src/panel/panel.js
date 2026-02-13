@@ -6,6 +6,7 @@ const PROVIDERS = {
   claude: {
     name: 'Claude',
     color: '#D97757',
+    colors: ['#D97757', '#E8956E', '#C75B3A', '#F4A886', '#B04525'],
     icon: '🟠',
     models: [
       { id: 'claude-opus-4-6', name: 'Opus 4.6' },
@@ -16,6 +17,7 @@ const PROVIDERS = {
   chatgpt: {
     name: 'ChatGPT',
     color: '#10A37F',
+    colors: ['#10A37F', '#2BC49A', '#0D8A6A', '#4DD9B4', '#087356'],
     icon: '🟢',
     models: [
       { id: 'gpt-4o', name: 'GPT-4o' },
@@ -26,6 +28,7 @@ const PROVIDERS = {
   gemini: {
     name: 'Gemini',
     color: '#4285F4',
+    colors: ['#4285F4', '#5E9BF7', '#2B6FE0', '#82B4FA', '#1A5CC8'],
     icon: '🔵',
     models: [
       { id: 'gemini-2.0-flash', name: '2.0 Flash' },
@@ -36,6 +39,7 @@ const PROVIDERS = {
   copilot: {
     name: 'Copilot',
     color: '#8B5CF6',
+    colors: ['#8B5CF6', '#A47CF8', '#7340E0', '#BC9CFA', '#5C2DC8'],
     icon: '🟣',
     models: [
       // OpenAI
@@ -161,6 +165,7 @@ function getParticipants() {
   const participants = [];
   let idx = 0;
   const nameCount = {};
+  const providerColorIndex = {}; // Track color assignment per provider
 
   rows.forEach((row) => {
     const provider = row.querySelector('.participant-provider').value;
@@ -173,12 +178,18 @@ function getParticipants() {
     const key = `${provider}:${model}`;
     nameCount[key] = (nameCount[key] || 0) + 1;
 
+    // Assign a distinct color from the provider's palette
+    const colorIdx = providerColorIndex[provider] || 0;
+    const palette = providerInfo.colors || [providerInfo.color];
+    const assignedColor = palette[colorIdx % palette.length];
+    providerColorIndex[provider] = colorIdx + 1;
+
     participants.push({
       uid: `${provider}-${idx}`,
       provider,
       model,
       displayName: `${providerInfo.name} ${modelName}`,
-      color: providerInfo.color,
+      color: assignedColor,
       icon: providerInfo.icon,
     });
     idx++;
@@ -286,6 +297,8 @@ async function startMeeting() {
         provider: p.provider,
         model: p.model,
         displayName: p.displayName,
+        color: p.color,
+        icon: p.icon,
       })),
     },
   });

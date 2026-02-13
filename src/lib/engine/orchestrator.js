@@ -49,8 +49,8 @@ export class MeetingOrchestrator {
         name: p.displayName,
         provider: p.provider,
         model: p.model,
-        color: providerInfo.color,
-        icon: providerInfo.icon,
+        color: p.color || providerInfo.color,
+        icon: p.icon || providerInfo.icon,
       });
     }
 
