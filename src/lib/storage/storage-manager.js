@@ -11,11 +11,12 @@ const DEFAULT_SETTINGS = {
   evaluationMode: 'cross', // 'cross' | 'summary' | 'none'
   language: 'zh-TW',
   theme: 'auto',
-  selectedProviders: ['claude', 'chatgpt', 'gemini'],
+  selectedProviders: ['claude', 'chatgpt', 'gemini', 'copilot'],
   models: {
     claude: 'claude-sonnet-4-5-20250929',
     chatgpt: 'gpt-4o',
     gemini: 'gemini-2.0-flash',
+    copilot: 'gpt-4o',
   },
 };
 

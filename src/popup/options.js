@@ -1,6 +1,6 @@
 // Options page controller
 
-const PROVIDERS = ['claude', 'chatgpt', 'gemini'];
+const PROVIDERS = ['claude', 'chatgpt', 'gemini', 'copilot'];
 
 async function init() {
   // Load saved keys
@@ -48,6 +48,7 @@ document.querySelectorAll('.btn-verify').forEach(btn => {
     if (provider === 'claude' && key.startsWith('sk-ant-')) valid = true;
     else if (provider === 'chatgpt' && key.startsWith('sk-')) valid = true;
     else if (provider === 'gemini' && key.startsWith('AIza')) valid = true;
+    else if (provider === 'copilot' && (key.startsWith('ghp_') || key.startsWith('github_pat_'))) valid = true;
     else valid = key.length > 10; // fallback
 
     if (valid) {
@@ -88,6 +89,7 @@ document.getElementById('btn-save').addEventListener('click', async () => {
         claude: document.getElementById('model-claude').value,
         chatgpt: document.getElementById('model-chatgpt').value,
         gemini: document.getElementById('model-gemini').value,
+        copilot: document.getElementById('model-copilot').value,
       },
     },
   });

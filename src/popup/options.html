@@ -200,6 +200,31 @@
       </div>
     </div>
 
+    <!-- GitHub Copilot -->
+    <div class="section">
+      <h2><span class="provider-icon">🟣</span> GitHub Copilot</h2>
+      <div class="field">
+        <label>GitHub Personal Access Token</label>
+        <div class="input-row">
+          <input type="password" id="key-copilot" placeholder="ghp_... 或 github_pat_...">
+          <button class="btn btn-verify" data-provider="copilot">驗證</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>模型</label>
+        <select id="model-copilot">
+          <option value="gpt-4o" selected>GPT-4o (GitHub)</option>
+          <option value="gpt-4o-mini">GPT-4o Mini (GitHub)</option>
+          <option value="o3-mini">o3-mini (GitHub)</option>
+          <option value="Mistral-Large-2411">Mistral Large</option>
+          <option value="Meta-Llama-3.1-405B-Instruct">Llama 3.1 405B</option>
+        </select>
+      </div>
+      <p style="font-size:12px; color:var(--text-dim); margin-top:8px;">
+        需要 GitHub Copilot 訂閱。使用 GitHub Personal Access Token 認證。
+      </p>
+    </div>
+
     <!-- General Settings -->
     <div class="section">
       <h2>🔧 一般設定</h2>

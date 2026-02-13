@@ -5,6 +5,7 @@ const PROVIDER_META = {
   claude: { name: 'Claude', color: '#D97757', icon: '🟠' },
   chatgpt: { name: 'ChatGPT', color: '#10A37F', icon: '🟢' },
   gemini: { name: 'Gemini', color: '#4285F4', icon: '🔵' },
+  copilot: { name: 'Copilot', color: '#8B5CF6', icon: '🟣' },
 };
 
 // DOM elements

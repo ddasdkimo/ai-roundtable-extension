@@ -3,6 +3,7 @@
 import { ClaudeProvider } from './claude-provider.js';
 import { ChatGPTProvider } from './chatgpt-provider.js';
 import { GeminiProvider } from './gemini-provider.js';
+import { CopilotProvider } from './copilot-provider.js';
 
 export const PROVIDER_REGISTRY = {
   claude: {
@@ -26,6 +27,13 @@ export const PROVIDER_REGISTRY = {
     color: '#4285F4',
     icon: '🔵',
   },
+  copilot: {
+    id: 'copilot',
+    name: 'Copilot',
+    providerClass: CopilotProvider,
+    color: '#8B5CF6',
+    icon: '🟣',
+  },
 };
 
 export function createProvider(providerId, config) {
@@ -34,4 +42,4 @@ export function createProvider(providerId, config) {
   return new entry.providerClass(config);
 }
 
-export { ClaudeProvider, ChatGPTProvider, GeminiProvider };
+export { ClaudeProvider, ChatGPTProvider, GeminiProvider, CopilotProvider };
