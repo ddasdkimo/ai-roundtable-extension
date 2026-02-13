@@ -203,35 +203,96 @@ body {
   flex: 1;
 }
 
-.participant-selector {
+/* Dynamic Participant List */
+.participant-list {
   display: flex;
+  flex-direction: column;
   gap: 8px;
-  flex-wrap: wrap;
+  margin-bottom: 8px;
 }
 
-.chip-checkbox {
-  cursor: pointer;
-}
-
-.chip-checkbox input {
-  display: none;
-}
-
-.chip {
-  display: inline-flex;
+.participant-row {
+  display: flex;
+  gap: 6px;
   align-items: center;
-  gap: 4px;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 13px;
-  border: 2px solid var(--border-color);
-  background: var(--bg-card);
-  transition: all 0.2s;
+  animation: fadeIn 0.2s ease;
 }
 
-.chip-checkbox input:checked + .chip {
-  border-color: var(--chip-color);
-  background: color-mix(in srgb, var(--chip-color) 15%, var(--bg-card));
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.participant-row select {
+  flex: 1;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239898a8'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 26px;
+}
+
+.participant-row select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.participant-provider {
+  flex: 1.2 !important;
+}
+
+.participant-model {
+  flex: 1 !important;
+}
+
+.btn-remove-row {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  padding: 0;
+}
+
+.btn-remove-row:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.btn-add-row {
+  background: transparent;
+  border: 1px dashed var(--border-color);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  transition: all 0.2s;
+  width: 100%;
+  text-align: center;
+}
+
+.btn-add-row:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(99, 102, 241, 0.05);
 }
 
 .setup-hint {

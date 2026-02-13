@@ -1,4 +1,5 @@
 // Meeting Orchestration Engine
+// Supports multiple instances of the same provider with different models
 
 import { createProvider, PROVIDER_REGISTRY } from '../providers/index.js';
 import { PromptTemplates } from './prompts.js';
@@ -14,22 +15,42 @@ const MEETING_PHASES = {
 };
 
 export class MeetingOrchestrator {
-  constructor(config, providerConfigs) {
+  /**
+   * @param {object} config
+   * @param {string} config.topic
+   * @param {number} config.rounds
+   * @param {string} config.evaluationMode
+   * @param {Array<{uid, provider, model, displayName}>} config.participants
+   * @param {object} apiKeys - { claude: 'sk-...', chatgpt: 'sk-...', ... }
+   */
+  constructor(config, apiKeys) {
     this.topic = config.topic;
     this.rounds = config.rounds || 2;
     this.evaluationMode = config.evaluationMode || 'cross';
-    this.turnOrder = config.turnOrder || 'sequential'; // 'sequential' | 'random'
+    this.turnOrder = config.turnOrder || 'sequential';
     this.language = config.language || 'zh-TW';
 
-    this.providers = {};
+    // Build a provider instance per participant (each can have different model)
+    this.providerInstances = {};
     this.participants = [];
-    for (const [id, provConfig] of Object.entries(providerConfigs)) {
-      this.providers[id] = createProvider(id, provConfig);
+
+    for (const p of config.participants) {
+      const apiKey = apiKeys[p.provider];
+      if (!apiKey) continue;
+
+      const providerInfo = PROVIDER_REGISTRY[p.provider];
+      this.providerInstances[p.uid] = createProvider(p.provider, {
+        apiKey,
+        model: p.model,
+      });
+
       this.participants.push({
-        id,
-        name: PROVIDER_REGISTRY[id].name,
-        color: PROVIDER_REGISTRY[id].color,
-        icon: PROVIDER_REGISTRY[id].icon,
+        id: p.uid,
+        name: p.displayName,
+        provider: p.provider,
+        model: p.model,
+        color: providerInfo.color,
+        icon: providerInfo.icon,
       });
     }
 
@@ -70,9 +91,7 @@ export class MeetingOrchestrator {
     this._emit({ type: 'PHASE_CHANGE', phase: this.phase });
 
     for (let round = 1; round <= this.rounds; round++) {
-      if (this._paused) {
-        await this._waitForResume();
-      }
+      if (this._paused) await this._waitForResume();
 
       this.currentRound = round;
       this._emit({ type: 'ROUND_START', round });
@@ -80,9 +99,7 @@ export class MeetingOrchestrator {
       const order = this._getParticipantOrder();
 
       for (const participant of order) {
-        if (this._paused) {
-          await this._waitForResume();
-        }
+        if (this._paused) await this._waitForResume();
 
         this._emit({
           type: 'TURN_START',
@@ -90,8 +107,8 @@ export class MeetingOrchestrator {
           round,
         });
 
-        const messages = this._buildDiscussionPrompt(participant.id, round);
-        const provider = this.providers[participant.id];
+        const messages = this._buildDiscussionPrompt(participant, round);
+        const provider = this.providerInstances[participant.id];
 
         let response = '';
         try {
@@ -125,12 +142,10 @@ export class MeetingOrchestrator {
       this._emit({ type: 'ROUND_END', round });
     }
 
-    // Evaluation phase
     if (this.evaluationMode !== 'none') {
       await this._runEvaluation();
     }
 
-    // Summary phase
     await this._runSummary();
 
     this.phase = MEETING_PHASES.COMPLETED;
@@ -148,9 +163,7 @@ export class MeetingOrchestrator {
     this._paused = false;
     this.phase = MEETING_PHASES.DISCUSSION;
     this._emit({ type: 'PHASE_CHANGE', phase: this.phase });
-    if (this._resumeResolve) {
-      this._resumeResolve();
-    }
+    if (this._resumeResolve) this._resumeResolve();
   }
 
   async stop() {
@@ -215,15 +228,15 @@ export class MeetingOrchestrator {
     return order;
   }
 
-  _buildDiscussionPrompt(participantId, round) {
+  _buildDiscussionPrompt(participant, round) {
     const previousMessages = this.transcript
-      .filter(t => t.round < round || (t.round === round && t.participant !== participantId))
+      .filter(t => t.round < round || (t.round === round && t.participant !== participant.id))
       .map(t => `[${t.participantName}]: ${t.content}`)
       .join('\n\n');
 
     return PromptTemplates.discussion({
       topic: this.topic,
-      participantName: PROVIDER_REGISTRY[participantId].name,
+      participantName: participant.name,
       round,
       totalRounds: this.rounds,
       previousMessages,
@@ -246,7 +259,7 @@ export class MeetingOrchestrator {
         language: this.language,
       });
 
-      const provider = this.providers[participant.id];
+      const provider = this.providerInstances[participant.id];
       let response = '';
       try {
         response = await provider.streamMessage(messages, (chunk) => {
@@ -276,8 +289,7 @@ export class MeetingOrchestrator {
     this.phase = MEETING_PHASES.SUMMARY;
     this._emit({ type: 'PHASE_CHANGE', phase: this.phase });
 
-    // Use the first available provider for summary
-    const firstProvider = this.providers[this.participants[0].id];
+    const firstProvider = this.providerInstances[this.participants[0].id];
     const messages = PromptTemplates.summary({
       topic: this.topic,
       transcript: this.transcript,

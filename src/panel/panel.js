@@ -1,12 +1,54 @@
 // AI Roundtable - Side Panel Controller
 import { renderMarkdown } from '../lib/markdown.js';
 
-const PROVIDER_META = {
-  claude: { name: 'Claude', color: '#D97757', icon: '🟠' },
-  chatgpt: { name: 'ChatGPT', color: '#10A37F', icon: '🟢' },
-  gemini: { name: 'Gemini', color: '#4285F4', icon: '🔵' },
-  copilot: { name: 'Copilot', color: '#8B5CF6', icon: '🟣' },
+// Provider definitions with available models
+const PROVIDERS = {
+  claude: {
+    name: 'Claude',
+    color: '#D97757',
+    icon: '🟠',
+    models: [
+      { id: 'claude-opus-4-6', name: 'Opus 4.6' },
+      { id: 'claude-sonnet-4-5-20250929', name: 'Sonnet 4.5' },
+      { id: 'claude-haiku-4-5-20251001', name: 'Haiku 4.5' },
+    ],
+  },
+  chatgpt: {
+    name: 'ChatGPT',
+    color: '#10A37F',
+    icon: '🟢',
+    models: [
+      { id: 'gpt-4o', name: 'GPT-4o' },
+      { id: 'gpt-4o-mini', name: 'GPT-4o Mini' },
+      { id: 'gpt-4-turbo', name: 'GPT-4 Turbo' },
+    ],
+  },
+  gemini: {
+    name: 'Gemini',
+    color: '#4285F4',
+    icon: '🔵',
+    models: [
+      { id: 'gemini-2.0-flash', name: '2.0 Flash' },
+      { id: 'gemini-2.0-pro', name: '2.0 Pro' },
+      { id: 'gemini-1.5-pro', name: '1.5 Pro' },
+    ],
+  },
+  copilot: {
+    name: 'Copilot',
+    color: '#8B5CF6',
+    icon: '🟣',
+    models: [
+      { id: 'gpt-4o', name: 'GPT-4o (GitHub)' },
+      { id: 'gpt-4o-mini', name: 'GPT-4o Mini' },
+      { id: 'o3-mini', name: 'o3-mini' },
+      { id: 'Mistral-Large-2411', name: 'Mistral Large' },
+      { id: 'Meta-Llama-3.1-405B-Instruct', name: 'Llama 3.1 405B' },
+    ],
+  },
 };
+
+// Runtime participant meta (built dynamically from meeting config)
+let participantMeta = {};
 
 // DOM elements
 const viewSetup = document.getElementById('view-setup');
@@ -20,6 +62,8 @@ const btnStop = document.getElementById('btn-stop');
 const btnHistory = document.getElementById('btn-history');
 const btnExport = document.getElementById('btn-export');
 const btnSettings = document.getElementById('btn-settings');
+const btnAddParticipant = document.getElementById('btn-add-participant');
+const participantList = document.getElementById('participant-list');
 const phaseLabel = document.getElementById('phase-label');
 const roundLabel = document.getElementById('round-label');
 const roundtableSeats = document.getElementById('roundtable-seats');
@@ -32,11 +76,109 @@ const apiWarning = document.getElementById('api-warning');
 
 let currentStreamEl = null;
 let isPaused = false;
-
-// Accumulate raw text per streaming target so we can render markdown on completion
+let participantCounter = 0;
 const rawTextMap = new Map();
 
-// Initialize
+// --- Participant Row Management ---
+
+function addParticipantRow(providerId, modelId) {
+  participantCounter++;
+  const rowId = `participant-${participantCounter}`;
+  const row = document.createElement('div');
+  row.className = 'participant-row';
+  row.id = rowId;
+
+  // Provider select
+  const providerSelect = document.createElement('select');
+  providerSelect.className = 'participant-provider';
+  for (const [id, p] of Object.entries(PROVIDERS)) {
+    const opt = document.createElement('option');
+    opt.value = id;
+    opt.textContent = `${p.icon} ${p.name}`;
+    if (id === providerId) opt.selected = true;
+    providerSelect.appendChild(opt);
+  }
+
+  // Model select
+  const modelSelect = document.createElement('select');
+  modelSelect.className = 'participant-model';
+
+  function populateModels(pid) {
+    modelSelect.innerHTML = '';
+    const provider = PROVIDERS[pid];
+    if (!provider) return;
+    for (const m of provider.models) {
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = m.name;
+      if (m.id === modelId) opt.selected = true;
+      modelSelect.appendChild(opt);
+    }
+  }
+
+  populateModels(providerId || 'claude');
+  providerSelect.addEventListener('change', () => {
+    populateModels(providerSelect.value);
+  });
+
+  // Remove button
+  const removeBtn = document.createElement('button');
+  removeBtn.className = 'btn btn-remove-row';
+  removeBtn.textContent = '✕';
+  removeBtn.title = '移除';
+  removeBtn.addEventListener('click', () => {
+    row.remove();
+  });
+
+  row.appendChild(providerSelect);
+  row.appendChild(modelSelect);
+  row.appendChild(removeBtn);
+  participantList.appendChild(row);
+}
+
+function getParticipants() {
+  const rows = participantList.querySelectorAll('.participant-row');
+  const participants = [];
+  let idx = 0;
+  const nameCount = {};
+
+  rows.forEach((row) => {
+    const provider = row.querySelector('.participant-provider').value;
+    const model = row.querySelector('.participant-model').value;
+    const providerInfo = PROVIDERS[provider];
+    const modelInfo = providerInfo.models.find(m => m.id === model);
+    const modelName = modelInfo ? modelInfo.name : model;
+
+    // Track duplicates to generate unique display names
+    const key = `${provider}:${model}`;
+    nameCount[key] = (nameCount[key] || 0) + 1;
+
+    participants.push({
+      uid: `${provider}-${idx}`,
+      provider,
+      model,
+      displayName: `${providerInfo.name} ${modelName}`,
+      color: providerInfo.color,
+      icon: providerInfo.icon,
+    });
+    idx++;
+  });
+
+  // Disambiguate identical provider+model combos
+  const seen = {};
+  for (const p of participants) {
+    const key = `${p.provider}:${p.model}`;
+    if (nameCount[key] > 1) {
+      seen[key] = (seen[key] || 0) + 1;
+      p.displayName += ` #${seen[key]}`;
+    }
+  }
+
+  return participants;
+}
+
+// --- Init ---
+
 async function init() {
   const response = await sendMessage({ type: 'GET_SETTINGS' });
   if (response?.success) {
@@ -45,32 +187,43 @@ async function init() {
     inputEval.value = settings.evaluationMode || 'cross';
   }
 
+  // Default: add 3 participants (Claude Sonnet, ChatGPT GPT-4o, Gemini Flash)
+  addParticipantRow('claude', 'claude-sonnet-4-5-20250929');
+  addParticipantRow('chatgpt', 'gpt-4o');
+  addParticipantRow('gemini', 'gemini-2.0-flash');
+
   // Check for active meeting
   const stateResp = await sendMessage({ type: 'GET_MEETING_STATE' });
   if (stateResp?.success && stateResp.state) {
     restoreMeetingView(stateResp.state);
   }
-
-  // Check API keys
-  checkApiKeys();
 }
 
-async function checkApiKeys() {
-  const response = await sendMessage({ type: 'GET_SETTINGS' });
-  // We'll rely on the meeting start to validate
-}
+// --- Event Listeners ---
 
-// Event Listeners
 btnStart.addEventListener('click', startMeeting);
 btnPause.addEventListener('click', togglePause);
 btnStop.addEventListener('click', stopMeeting);
 btnExport.addEventListener('click', exportTranscript);
+btnAddParticipant.addEventListener('click', () => addParticipantRow('claude', ''));
 btnHistory.addEventListener('click', () => {
   window.location.href = 'history.html';
 });
 btnSettings.addEventListener('click', () => {
   chrome.runtime.openOptionsPage();
 });
+
+// Listen for topic from context menu selection
+chrome.runtime.onMessage.addListener((message) => {
+  if (message.type === 'ROUNDTABLE_TOPIC_FROM_SELECTION') {
+    inputTopic.value = message.payload.topic;
+  }
+  if (message.type === 'MEETING_UPDATE' || message.type) {
+    handleUpdate(message);
+  }
+});
+
+// --- Meeting Flow ---
 
 async function startMeeting() {
   const topic = inputTopic.value.trim();
@@ -81,19 +234,26 @@ async function startMeeting() {
     return;
   }
 
-  const selectedProviders = [];
-  document.querySelectorAll('.participant-selector input:checked').forEach(cb => {
-    selectedProviders.push(cb.value);
-  });
-
-  if (selectedProviders.length < 2) {
-    apiWarning.textContent = '⚠️ 至少需要選擇 2 個 AI 參與者';
+  const participants = getParticipants();
+  if (participants.length < 2) {
+    apiWarning.textContent = '⚠️ 至少需要 2 個參與者';
     apiWarning.style.display = 'block';
     return;
   }
 
+  // Build participant meta for UI rendering during meeting
+  participantMeta = {};
+  for (const p of participants) {
+    participantMeta[p.uid] = {
+      name: p.displayName,
+      color: p.color,
+      icon: p.icon,
+    };
+  }
+
   btnStart.disabled = true;
   btnStart.textContent = '啟動中...';
+  apiWarning.style.display = 'none';
 
   const response = await sendMessage({
     type: 'START_MEETING',
@@ -101,12 +261,17 @@ async function startMeeting() {
       topic,
       rounds: parseInt(inputRounds.value),
       evaluationMode: inputEval.value,
-      selectedProviders,
+      participants: participants.map(p => ({
+        uid: p.uid,
+        provider: p.provider,
+        model: p.model,
+        displayName: p.displayName,
+      })),
     },
   });
 
   if (response?.success) {
-    showMeetingView(selectedProviders, topic);
+    showMeetingView(participants, topic);
   } else {
     apiWarning.textContent = `⚠️ ${response?.error || '啟動失敗，請檢查 API Key 設定'}`;
     apiWarning.style.display = 'block';
@@ -115,25 +280,23 @@ async function startMeeting() {
   }
 }
 
-function showMeetingView(providers, topic) {
+function showMeetingView(participants, topic) {
   viewSetup.classList.remove('active');
   viewMeeting.classList.add('active');
   btnExport.disabled = false;
 
-  // Render roundtable seats
   roundtableSeats.innerHTML = '';
-  const count = providers.length;
-  providers.forEach((id, i) => {
-    const meta = PROVIDER_META[id];
+  const count = participants.length;
+  participants.forEach((p, i) => {
     const angle = (360 / count) * i - 90;
     const seat = document.createElement('div');
     seat.className = 'seat';
-    seat.id = `seat-${id}`;
+    seat.id = `seat-${p.uid}`;
     seat.style.setProperty('--angle', `${angle}deg`);
-    seat.style.setProperty('--seat-color', meta.color);
+    seat.style.setProperty('--seat-color', p.color);
     seat.innerHTML = `
-      <div class="seat-avatar">${meta.icon}</div>
-      <div class="seat-name">${meta.name}</div>
+      <div class="seat-avatar">${p.icon}</div>
+      <div class="seat-name">${p.displayName}</div>
     `;
     roundtableSeats.appendChild(seat);
   });
@@ -142,8 +305,21 @@ function showMeetingView(providers, topic) {
 }
 
 function restoreMeetingView(state) {
+  participantMeta = {};
+  for (const p of state.participants) {
+    participantMeta[p.id] = {
+      name: p.name,
+      color: p.color || '#888',
+      icon: p.icon || '🤖',
+    };
+  }
   showMeetingView(
-    state.participants.map(p => p.id),
+    state.participants.map(p => ({
+      uid: p.id,
+      displayName: p.name,
+      color: p.color || '#888',
+      icon: p.icon || '🤖',
+    })),
     state.topic
   );
   phaseLabel.textContent = getPhaseLabel(state.phase);
@@ -188,11 +364,11 @@ async function exportTranscript() {
   }
 }
 
-// Listen for updates from background
-chrome.runtime.onMessage.addListener((message) => {
-  if (!message.type) return;
-  handleUpdate(message);
-});
+// --- Update Handler ---
+
+function getMeta(participantId) {
+  return participantMeta[participantId] || { name: participantId, color: '#888', icon: '🤖' };
+}
 
 function handleUpdate(update) {
   const payload = update.payload || update;
@@ -204,12 +380,8 @@ function handleUpdate(update) {
 
     case 'PHASE_CHANGE':
       phaseLabel.textContent = getPhaseLabel(payload.phase);
-      if (payload.phase === 'evaluation') {
-        evaluationSection.style.display = 'block';
-      }
-      if (payload.phase === 'summary') {
-        summarySection.style.display = 'block';
-      }
+      if (payload.phase === 'evaluation') evaluationSection.style.display = 'block';
+      if (payload.phase === 'summary') summarySection.style.display = 'block';
       break;
 
     case 'ROUND_START':
@@ -219,7 +391,7 @@ function handleUpdate(update) {
 
     case 'TURN_START': {
       highlightSeat(payload.participant);
-      const meta = PROVIDER_META[payload.participant];
+      const meta = getMeta(payload.participant);
       const msgEl = document.createElement('div');
       msgEl.className = 'message';
       msgEl.style.setProperty('--msg-color', meta.color);
@@ -240,7 +412,7 @@ function handleUpdate(update) {
       if (payload.phase === 'evaluation') {
         let evalEl = document.getElementById(`eval-${payload.participant}`);
         if (!evalEl) {
-          const meta = PROVIDER_META[payload.participant];
+          const meta = getMeta(payload.participant);
           const wrapper = document.createElement('div');
           wrapper.className = 'eval-card';
           wrapper.innerHTML = `
@@ -267,7 +439,6 @@ function handleUpdate(update) {
 
     case 'TURN_END': {
       unhighlightAllSeats();
-      // Render accumulated markdown
       if (currentStreamEl && payload.participant) {
         const streamKey = `stream-${payload.participant}`;
         const raw = rawTextMap.get(streamKey);
@@ -287,7 +458,6 @@ function handleUpdate(update) {
 
     case 'EVAL_END': {
       unhighlightAllSeats();
-      // Render accumulated markdown for evaluation
       if (payload.participant) {
         const evalKey = `eval-${payload.participant}`;
         const evalEl = document.getElementById(evalKey);
@@ -305,7 +475,6 @@ function handleUpdate(update) {
       phaseLabel.textContent = '會議結束';
       btnPause.disabled = true;
       btnStop.disabled = true;
-      // Render accumulated markdown for summary
       const summaryRaw = rawTextMap.get('summary');
       if (summaryRaw) {
         summaryContent.innerHTML = renderMarkdown(summaryRaw);
@@ -318,8 +487,7 @@ function handleUpdate(update) {
 }
 
 function appendMessage(participantId, content) {
-  const meta = PROVIDER_META[participantId];
-  if (!meta) return;
+  const meta = getMeta(participantId);
   const msgEl = document.createElement('div');
   msgEl.className = 'message';
   msgEl.style.setProperty('--msg-color', meta.color);
@@ -345,21 +513,10 @@ function unhighlightAllSeats() {
 
 function getPhaseLabel(phase) {
   const labels = {
-    idle: '準備中',
-    setup: '設定中',
-    discussion: '討論中',
-    evaluation: '評價中',
-    summary: '生成摘要',
-    completed: '已完成',
-    paused: '已暫停',
+    idle: '準備中', setup: '設定中', discussion: '討論中',
+    evaluation: '評價中', summary: '生成摘要', completed: '已完成', paused: '已暫停',
   };
   return labels[phase] || phase;
-}
-
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
 }
 
 function sendMessage(message) {

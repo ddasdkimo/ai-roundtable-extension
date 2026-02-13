@@ -58,16 +58,23 @@ async function handleMessage(message, sender) {
   switch (message.type) {
     case 'START_MEETING': {
       const config = message.payload;
-      const allProviders = await storage.getProviders();
-      // Filter to only user-selected providers
-      const providers = {};
-      for (const id of (config.selectedProviders || Object.keys(allProviders))) {
-        if (allProviders[id]) providers[id] = allProviders[id];
+      const apiKeys = await storage.getApiKeys();
+
+      // Validate: check all required provider keys exist
+      if (config.participants) {
+        const missingProviders = new Set();
+        for (const p of config.participants) {
+          if (!apiKeys[p.provider]) missingProviders.add(p.provider);
+        }
+        if (missingProviders.size > 0) {
+          return { success: false, error: `缺少 API Key：${[...missingProviders].join(', ')}，請先在設定中配置` };
+        }
+        if (config.participants.length < 2) {
+          return { success: false, error: '至少需要 2 個參與者' };
+        }
       }
-      if (Object.keys(providers).length < 2) {
-        return { success: false, error: '至少需要 2 個已配置 API Key 的 AI 參與者' };
-      }
-      activeOrchestrator = new MeetingOrchestrator(config, providers);
+
+      activeOrchestrator = new MeetingOrchestrator(config, apiKeys);
       activeOrchestrator.onUpdate(async (update) => {
         broadcastToPanel({ type: 'MEETING_UPDATE', payload: update });
         // Auto-save when meeting completes naturally

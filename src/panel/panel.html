@@ -32,25 +32,11 @@
         </div>
 
         <div class="form-group">
-          <label>參與的 AI</label>
-          <div class="participant-selector">
-            <label class="chip-checkbox">
-              <input type="checkbox" value="claude" checked>
-              <span class="chip" style="--chip-color: #D97757">🟠 Claude</span>
-            </label>
-            <label class="chip-checkbox">
-              <input type="checkbox" value="chatgpt" checked>
-              <span class="chip" style="--chip-color: #10A37F">🟢 ChatGPT</span>
-            </label>
-            <label class="chip-checkbox">
-              <input type="checkbox" value="gemini" checked>
-              <span class="chip" style="--chip-color: #4285F4">🔵 Gemini</span>
-            </label>
-            <label class="chip-checkbox">
-              <input type="checkbox" value="copilot">
-              <span class="chip" style="--chip-color: #8B5CF6">🟣 Copilot</span>
-            </label>
+          <label>參與的 AI <span style="font-weight:400;color:var(--text-secondary)">（同一個 AI 可加入多個不同模型）</span></label>
+          <div id="participant-list" class="participant-list">
+            <!-- Dynamic participant rows -->
           </div>
+          <button id="btn-add-participant" class="btn btn-add-row">＋ 新增參與者</button>
         </div>
 
         <div class="form-row">
