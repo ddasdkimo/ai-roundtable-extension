@@ -133,6 +133,17 @@
       transition: opacity 0.3s;
     }
     .save-status.visible { opacity: 1; }
+    .key-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: var(--accent);
+      text-decoration: none;
+      margin-top: 8px;
+    }
+    .key-link:hover { color: var(--accent-hover); text-decoration: underline; }
+    .key-link::before { content: '🔗'; font-size: 11px; }
   </style>
 </head>
 <body>
@@ -149,6 +160,7 @@
           <input type="password" id="key-claude" placeholder="sk-ant-...">
           <button class="btn btn-verify" data-provider="claude">驗證</button>
         </div>
+        <a class="key-link" href="https://console.anthropic.com/settings/keys" target="_blank">前往 Anthropic Console 取得 API Key</a>
       </div>
       <div class="field">
         <label>模型</label>
@@ -169,6 +181,7 @@
           <input type="password" id="key-chatgpt" placeholder="sk-...">
           <button class="btn btn-verify" data-provider="chatgpt">驗證</button>
         </div>
+        <a class="key-link" href="https://platform.openai.com/api-keys" target="_blank">前往 OpenAI Platform 取得 API Key</a>
       </div>
       <div class="field">
         <label>模型</label>
@@ -189,6 +202,7 @@
           <input type="password" id="key-gemini" placeholder="AIza...">
           <button class="btn btn-verify" data-provider="gemini">驗證</button>
         </div>
+        <a class="key-link" href="https://aistudio.google.com/apikey" target="_blank">前往 Google AI Studio 取得 API Key</a>
       </div>
       <div class="field">
         <label>模型</label>
@@ -220,8 +234,9 @@
           <option value="Meta-Llama-3.1-405B-Instruct">Llama 3.1 405B</option>
         </select>
       </div>
+      <a class="key-link" href="https://github.com/settings/tokens" target="_blank">前往 GitHub Settings 建立 Personal Access Token</a>
       <p style="font-size:12px; color:var(--text-dim); margin-top:8px;">
-        需要 GitHub Copilot 訂閱。使用 GitHub Personal Access Token 認證。
+        需要 GitHub Copilot 訂閱。建立 Token 時請勾選 <code style="background:var(--bg-input); padding:1px 4px; border-radius:3px;">copilot</code> 權限。
       </p>
     </div>
 
