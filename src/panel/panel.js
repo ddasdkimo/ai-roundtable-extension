@@ -38,11 +38,31 @@ const PROVIDERS = {
     color: '#8B5CF6',
     icon: '🟣',
     models: [
-      { id: 'gpt-4o', name: 'GPT-4o (GitHub)' },
-      { id: 'gpt-4o-mini', name: 'GPT-4o Mini' },
-      { id: 'o3-mini', name: 'o3-mini' },
-      { id: 'Mistral-Large-2411', name: 'Mistral Large' },
+      // OpenAI
+      { id: 'openai/gpt-4.1', name: 'GPT-4.1' },
+      { id: 'openai/gpt-4.1-mini', name: 'GPT-4.1 Mini' },
+      { id: 'openai/gpt-4.1-nano', name: 'GPT-4.1 Nano' },
+      { id: 'openai/gpt-4o', name: 'GPT-4o' },
+      { id: 'openai/gpt-5', name: 'GPT-5' },
+      { id: 'openai/gpt-5-mini', name: 'GPT-5 Mini' },
+      { id: 'openai/o3', name: 'o3' },
+      { id: 'openai/o3-mini', name: 'o3-mini' },
+      { id: 'openai/o4-mini', name: 'o4-mini' },
+      // DeepSeek
+      { id: 'deepseek/DeepSeek-R1', name: 'DeepSeek R1' },
+      { id: 'deepseek/DeepSeek-R1-0528', name: 'DeepSeek R1 0528' },
+      { id: 'deepseek/DeepSeek-V3-0324', name: 'DeepSeek V3' },
+      // Meta
       { id: 'Meta-Llama-3.1-405B-Instruct', name: 'Llama 3.1 405B' },
+      { id: 'Llama-3.3-70B-Instruct', name: 'Llama 3.3 70B' },
+      // xAI
+      { id: 'xai/grok-3', name: 'Grok 3' },
+      { id: 'xai/grok-3-mini', name: 'Grok 3 Mini' },
+      // Mistral
+      { id: 'mistral/Mistral-Medium-3', name: 'Mistral Medium 3' },
+      { id: 'mistral/Mistral-Small-3.1', name: 'Mistral Small 3.1' },
+      // Cohere
+      { id: 'cohere/Command-A', name: 'Command A' },
     ],
   },
 };
