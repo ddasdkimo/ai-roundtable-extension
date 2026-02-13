@@ -82,7 +82,13 @@ async function handleMessage(message, sender) {
           await storage.saveMeeting(update.meetingRecord);
         }
       });
-      await activeOrchestrator.start();
+      // Start meeting in background — don't await, return immediately
+      activeOrchestrator.start().catch((err) => {
+        broadcastToPanel({
+          type: 'MEETING_UPDATE',
+          payload: { type: 'PHASE_CHANGE', phase: 'completed', error: err.message },
+        });
+      });
       return { success: true };
     }
 
